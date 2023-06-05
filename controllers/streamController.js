@@ -23,6 +23,7 @@ const handleRequest = async (req, res) => {
         if (error) {
           console.error('Pipeline encountered an error:', error);
         }
+        console.log(serverResponse.headersSent);
         serverResponse.end(); // End the response after sending the content
       });
     });
