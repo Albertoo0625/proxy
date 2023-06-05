@@ -32,9 +32,15 @@ const handleRequest = async (req, res) => {
     server.listen(0, () => {
       assignedPort = server.address().port;
       console.log(`Server is running on port ${assignedPort}`);
+    });
+   
+    const getdynamicport = createServer((req, res) => {
+      res.end(assignedPort.toString());
+      getdynamicport.close(); // Close the server after sending the response
+    });
 
-      // Add trailing header with the assigned port
-      res.addTrailers({ 'Dynamic-Port': assignedPort.toString() });
+    getdynamicport.listen(8080, () => {
+      console.log('getdynamicport listening on port 8080');
     });
 
     // Create a WebSocket server instance
