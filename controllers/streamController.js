@@ -1,6 +1,7 @@
 const axios = require('axios');
 const { pipeline } = require('stream');
 const { createServer } = require('http');
+const { WebSocketServer } = require('ws');
 
 let assignedPort;
 
@@ -30,18 +31,20 @@ const handleRequest = async (req, res) => {
     server.listen(0, () => {
       assignedPort = server.address().port;
       console.log(`Server is running on port ${assignedPort}`);
-      console.log(`http://localhost:${assignedPort}`);
     });
 
-    // Create a separate HTTP server to send the port number as the response
-    const responseServer = createServer((req, serverResponse) => {
-      serverResponse.setHeader('Content-Type', 'text/plain');
-      serverResponse.end(assignedPort.toString()); // Send the port number as the response
-    });
+    const wss = new WebSocketServer({ server: server });
 
-    // Listen on a fixed port for sending the response
-    responseServer.listen(3000, () => {
-      console.log('Response server is running on port 3000');
+    wss.on('connection', function connection(ws) {
+      
+      // Send the assigned port to the client
+      ws.send(assignedPort.toString());
+
+      ws.on('message', function message(data) {
+        console.log('received: %s', data);
+      });
+
+      ws.on('error', console.error);
     });
   } catch (error) {
     console.error('Error handling request:', error);
