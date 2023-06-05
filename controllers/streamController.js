@@ -2,7 +2,7 @@ const axios = require('axios');
 const { pipeline } = require('stream');
 const { createServer } = require('http');
 
-let port;
+let assignedPort;
 
 const handleRequest = async (req, res) => {
   try {
@@ -15,29 +15,34 @@ const handleRequest = async (req, res) => {
     // Set the appropriate headers for the response
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Transfer-Encoding', 'chunked');
-    
 
-    // Create a server instance
-    const server = createServer((req, res) => {
-      
-      pipeline(response.data, res, (error) => {
+    // Create a server instance with the trailer option enabled
+    const server = createServer((req, serverResponse) => {
+      pipeline(response.data, serverResponse, (error) => {
         if (error) {
           console.error('Pipeline encountered an error:', error);
         }
+        serverResponse.end(); // End the response after sending the content
       });
     });
 
     // Start the server and listen on a dynamic port
     server.listen(0, () => {
-      port = server.address().port;
-      console.log(`Server is running on port ${port}`);
-      console.log(`http://localhost:${port}`);
-      res.setHeader('Stream-port', port);
+      assignedPort = server.address().port;
+      console.log(`Server is running on port ${assignedPort}`);
+      console.log(`http://localhost:${assignedPort}`);
     });
 
-    // Send the port number as the response after a slight delay
-    
-   
+    // Create a separate HTTP server to send the port number as the response
+    const responseServer = createServer((req, serverResponse) => {
+      serverResponse.setHeader('Content-Type', 'text/plain');
+      serverResponse.end(assignedPort.toString()); // Send the port number as the response
+    });
+
+    // Listen on a fixed port for sending the response
+    responseServer.listen(3000, () => {
+      console.log('Response server is running on port 3000');
+    });
   } catch (error) {
     console.error('Error handling request:', error);
     res.status(500).send('Internal Server Error');
