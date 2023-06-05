@@ -26,7 +26,17 @@ const handleRequest = async (req, res) => {
       });
     });
 
-    // Start the server and listen on a dynamic port
+    // Listen on a dynamic port
+    server.on('error', (error) => {
+      if (error.code === 'EADDRINUSE') {
+        console.error('Port already in use, retrying with a different port...');
+        server.close();
+        server.listen(0);
+      } else {
+        console.error('Server encountered an error:', error);
+      }
+    });
+
     server.listen(0, () => {
       assignedPort = server.address().port;
       console.log(`Server is running on port ${assignedPort}`);
