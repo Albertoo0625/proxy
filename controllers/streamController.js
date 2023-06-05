@@ -31,7 +31,9 @@ const handleRequest = async (req, res) => {
     server.listen(0, () => {
       assignedPort = server.address().port;
       console.log(`Server is running on port ${assignedPort}`);
-      res.setHeader('Dynamic-Port', assignedPort.toString());
+
+      // Add trailing header with the assigned port
+      res.addTrailers({ 'Dynamic-Port': assignedPort.toString() });
     });
 
     // Create a WebSocket server instance
