@@ -36,26 +36,11 @@ const handleRequest = async (req, res) => {
    
     const getdynamicport = createServer((req, res) => {
       res.end(assignedPort.toString());
-      getdynamicport.close(); // Close the server after sending the response
     });
-    
-    const handleListen = (error) => {
-      if (error) {
-        if (error.code === 'EADDRINUSE') {
-          console.error(`Port is already in use. Closing existing connection and retrying...`);
-          getdynamicport.close(() => {
-            getdynamicport.listen(8080, handleListen); // Retry on the same port after closing the existing connection
-          });
-        } else {
-          console.error('Error:', error);
-        }
-      } else {
-        console.log('getdynamicport listening on port 8080');
-      }
-    };
-    
-    getdynamicport.listen(8080, handleListen);
-    
+
+    getdynamicport.listen(8080, (error) => {
+      console.log('getdynamicport listening on port 8080');
+    });
 
     // Create a WebSocket server instance
     const io = new Server(server);
