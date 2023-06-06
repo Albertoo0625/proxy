@@ -44,22 +44,28 @@ const handleRequest = async (req, res) => {
     // });
 
     const responseServer = createServer();
-    const so = new Server(responseServer);
-
+    const so = new Server(responseServer, {
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+      }
+    });
+    
     so.on('connection', (socket) => {
       // Send the assigned port to the client
       socket.send(assignedPort.toString());
-
+    
       socket.on('message', (data) => {
-        console.log('received: %s', data);
+        console.log('received:', data);
       });
-
+    
       socket.on('error', console.error);
     });
-
+    
     responseServer.listen(8080, () => {
       console.log('Server is running on port 8080');
     });
+    
 
 
     // Create a WebSocket server instance
