@@ -63,7 +63,7 @@ const handleRequest = async (req, res) => {
       socket.on('error', console.error);
     });
     
-    responseServer.listen(8080, () => {
+    responseServer.listen(8443, () => {
       console.log('Server is running on port 8080');
     });
     
