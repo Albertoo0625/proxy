@@ -3,6 +3,7 @@ const { pipeline } = require('stream');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 
+
 let assignedPort;
 
 const handleRequest = async (req, res) => {
@@ -34,13 +35,32 @@ const handleRequest = async (req, res) => {
       console.log(`Server is running on port ${assignedPort}`);
     });
    
-    const getdynamicport = createServer((req, res) => {
-      res.end(assignedPort.toString());
+    // const getdynamicport = createServer((req, res) => {
+    //   res.end(assignedPort.toString());
+    // });
+
+    // getdynamicport.listen(8080, (error) => {
+    //   console.log('getdynamicport listening on port 8080');
+    // });
+
+    const responseServer = createServer();
+    const so = new Server(responseServer);
+
+    so.on('connection', (socket) => {
+      // Send the assigned port to the client
+      socket.send(assignedPort.toString());
+
+      socket.on('message', (data) => {
+        console.log('received: %s', data);
+      });
+
+      socket.on('error', console.error);
     });
 
-    getdynamicport.listen(8080, (error) => {
-      console.log('getdynamicport listening on port 8080');
+    responseServer.listen(8080, () => {
+      console.log('Server is running on port 8080');
     });
+
 
     // Create a WebSocket server instance
     const io = new Server(server);
