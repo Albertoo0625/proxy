@@ -3,6 +3,8 @@ const { pipeline } = require('stream');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const express=require('express');
+const app=express();
 
 let assignedPort;
 
@@ -24,7 +26,6 @@ const handleRequest = async (req, res) => {
         if (error) {
           console.error('Pipeline encountered an error:', error);
         }
-        console.log(serverResponse.headersSent);
         serverResponse.end(); // End the response after sending the content
       });
     });
@@ -35,47 +36,46 @@ const handleRequest = async (req, res) => {
       console.log(`Server is running on port ${assignedPort}`);
     });
 
-    const responseServer = createServer();
-    const so = new Server(responseServer, {
+
+    const responseServer=require('http').createServer(app)
+    const responseio=require("socket.io")(responseServer, {
       cors: {
         origin: '*',
         methods: ['GET', 'POST'],
       },
     });
 
-    so.on('connection', (socket) => {
-      // Send the assigned port to the client
+    responseio.on('connection',(socket)=>{
+      console.log('a user connected');
       socket.send(assignedPort.toString());
-
-      socket.on('message', (data) => {
-        console.log('received:', data);
-      });
 
       socket.on('error', console.error);
     });
 
-    responseServer.listen(8080, () => {
-      console.log('Server is running on port 8080');
+    responseServer.listen(8080,()=>{
+      console.log('server listening on port 8080');
     });
 
-    // Create a WebSocket server instance
-    const io = new Server(server,{ 
-        cors: {
+
+    const serverio=require("socket.io")(server, {
+      cors: {
         origin: '*',
         methods: ['GET', 'POST'],
-       },
-     });
+      },
+    });
 
-    io.on('connection', (socket) => {
-      // Send the assigned port to the client
-      socket.send(assignedPort.toString());
-
-      socket.on('message', (data) => {
-        console.log('received: %s', data);
-      });
+    serverio.on('connection',(socket)=>{
+      console.log('stream started');
+      socket.send('stream started');
 
       socket.on('error', console.error);
     });
+
+    // serverio.listen(assignedPort,()=>{
+    //   console.log(`streaming server listening on port ${assignedPort}`);
+    // });
+  
+
   } catch (error) {
     console.error('Error handling request:', error);
     res.status(500).send('Internal Server Error');
